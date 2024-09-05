@@ -27,7 +27,7 @@ public enum Metadata {
     SOLR("solr", "TODO", "TODO", "TODO", false, true),
     MARCXML("marcxml", "http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd", "marcxml", "http://www.loc.gov/MARC21/slim", true, true),
     OAI_DC("oai_dc", "http://www.openarchives.org/OAI/2.0/oai_dc.xsd", "oai_dc", "http://www.openarchives.org/OAI/2.0/oai_dc/", true, false),
-    ISEBEL("isebel", "http://www.openarchives.org/OAI/2.0/oai_dc.xsd", "oai_dc", "http://www.openarchives.org/OAI/2.0/oai_dc/", true, false),
+    ISEBEL("isebel", "http://www.isebel.eu/ns/isebel2.xsd", "isebel", "http://www.isebel.eu/ns/isebel", true, false),
     DC("dc", "http://www.openarchives.org/OAI/2.0/oai_dc.xsd", "dc", "http://purl.org/dc/elements/1.1/", false, true),
     EPICUR("epicur", "http://nbn-resolving.de/urn/resolver.pl?urn=urn:nbn:de:1111-2004033116", "epicur", "urn:nbn:de:1111-2004033116", true, false),
     LIDO("lido", "http://www.lido-schema.org/schema/v1.0/lido-v1.0.xsd", "lido", "http://www.lido-schema.org", true, true),

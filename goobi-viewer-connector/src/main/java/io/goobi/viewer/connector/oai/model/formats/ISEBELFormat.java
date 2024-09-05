@@ -402,16 +402,20 @@ public class ISEBELFormat extends Format {
 
         // creating Element <oai_dc:dc ....> </oai_dc:dc>
         // OBS! Her er nok min innfallvinkel
-        Element eleOaiDc = new Element("dc", nsOaiDoc);
+        Element eleStory = new Element("story", nsOaiDoc);
         Namespace nsDc = Namespace.getNamespace(
         	Metadata.DC.getMetadataNamespacePrefix(), 
         	Metadata.DC.getMetadataNamespaceUri()
         );
-        eleOaiDc.addNamespaceDeclaration(nsDc);
-        eleOaiDc.addNamespaceDeclaration(XSI_NS);
-        eleOaiDc.setAttribute(
+        Namespace nsDataCite = Namespace.getNamespace(
+        	"datacite", "http://datacite.org/schema/kernel-4"
+        );
+        eleStory.addNamespaceDeclaration(nsDc);
+        eleStory.addNamespaceDeclaration(nsDataCite);
+        eleStory.addNamespaceDeclaration(XSI_NS);
+        eleStory.setAttribute(
         	"schemaLocation", 
-        	"http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd", 
+        	Metadata.ISEBEL.getMetadataNamespaceUri() + " " + Metadata.ISEBEL.getSchema(), 
         	XSI_NS
         );
 
@@ -469,7 +473,7 @@ public class ISEBELFormat extends Format {
                                 );
                                 continue;
                             }
-                            eleOaiDc.addContent(generateDcSource(doc, topstructDoc, anchorDoc, nsDc));
+                            eleStory.addContent(generateDcSource(doc, topstructDoc, anchorDoc, nsDc));
                             break;
                         case "fulltext":
                             if (topstructDoc == null) {
@@ -483,7 +487,7 @@ public class ISEBELFormat extends Format {
                             	(String) topstructDoc.getFieldValue(SolrConstants.PI_TOPSTRUCT),
                             	nsDc
                             )) {
-                                eleOaiDc.addContent(eleOaiFullText);
+                                eleStory.addContent(eleOaiFullText);
                             }
                             break;
                         default:
@@ -608,12 +612,12 @@ public class ISEBELFormat extends Format {
                 for (String val : finishedValues) {
                     Element eleField = new Element(md.getLabel(), nsDc);
                     eleField.setText(val);
-                    eleOaiDc.addContent(eleField);
+                    eleStory.addContent(eleField);
                 }
             }
         }
 
-        metadata.addContent(eleOaiDc);
+        metadata.addContent(eleStory);
         eleRecord.addContent(metadata);
 
         return eleRecord;
