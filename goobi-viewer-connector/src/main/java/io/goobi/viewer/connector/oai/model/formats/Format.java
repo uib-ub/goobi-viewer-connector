@@ -657,6 +657,8 @@ public abstract class Format {
         switch (metadataPrefix) {
             case OAI_DC:
                 return new OAIDCFormat();
+            case ISEBEL:
+            	return new ISEBELFormat();
             case ESE:
                 return new EuropeanaFormat();
             case METS:
