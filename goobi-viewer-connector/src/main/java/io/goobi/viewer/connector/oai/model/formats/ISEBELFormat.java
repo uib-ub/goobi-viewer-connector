@@ -402,22 +402,70 @@ public class ISEBELFormat extends Format {
 
         // creating Element <oai_dc:dc ....> </oai_dc:dc>
         // OBS! Her er nok min innfallvinkel
-        Element eleStory = new Element("story", nsOaiDoc);
         Namespace nsDc = Namespace.getNamespace(
         	Metadata.DC.getMetadataNamespacePrefix(), 
         	Metadata.DC.getMetadataNamespaceUri()
         );
+        Namespace nsOaiDc = Namespace.getNamespace(
+        	Metadata.OAI_DC.getMetadataNamespacePrefix(),
+        	Metadata.OAI_DC.getMetadataNamespaceUri()
+        );
         Namespace nsDataCite = Namespace.getNamespace(
         	"datacite", "http://datacite.org/schema/kernel-4"
         );
-        eleStory.addNamespaceDeclaration(nsDc);
-        eleStory.addNamespaceDeclaration(nsDataCite);
-        eleStory.addNamespaceDeclaration(XSI_NS);
-        eleStory.setAttribute(
-        	"schemaLocation", 
-        	Metadata.ISEBEL.getMetadataNamespaceUri() + " " + Metadata.ISEBEL.getSchema(), 
-        	XSI_NS
+        Element eleDoc = new Element("dc", nsOaiDc);
+   
+        String docID = SolrSearchTools.getMetadataValues(doc, "PI").get(0);    
+        SolrDocumentList folkloreRecords = solr.search(
+        	"+PI_TOPSTRUCT:\"" 
+        		+ docID
+        		+ "\" +DOCTYPE:\"DOCSTRCT\" +DOCSTRCT:\"folklore_record\"", 
+        	filterQuerySuffix
         );
+        
+        for (int i = 0; i < folkloreRecords.size(); i++) {
+        	SolrDocument rec = folkloreRecords.get(i);
+        	Element eleRec = new Element("story", nsOaiDoc);
+            eleRec.addNamespaceDeclaration(nsDc);
+            eleRec.addNamespaceDeclaration(nsDataCite);
+            eleRec.addNamespaceDeclaration(XSI_NS);
+            eleRec.setAttribute(
+            	"schemaLocation", 
+            	Metadata.ISEBEL.getMetadataNamespaceUri() + " " + Metadata.ISEBEL.getSchema(), 
+            	XSI_NS
+            );
+            
+            List<String> recLang = SolrSearchTools.getMetadataValues(rec, "MD_LANGUAGE");
+            if (recLang.size() < 1) {
+            	recLang = SolrSearchTools.getMetadataValues(doc, "MD_LANGUAGE");
+            }
+            if (recLang.size() > 0) {
+            	String recLangVal = recLang.get(0); // What if more than one language
+            	eleRec.setAttribute("lang", recLangVal, Namespace.XML_NAMESPACE);
+            }
+            
+            String attrRecID = docID + "/" + (i + 1);
+            eleRec.setAttribute("id", attrRecID);
+            
+        	metadata.addContent(eleRec);
+        }
+        
+        /*
+        
+        List<String> docLang = SolrSearchTools.getMetadataValues(doc, "MD_LANGUAGE");
+        if (docLang.size() > 0) {
+        	eleDoc.setAttribute("lang", docLang.get(0), Namespace.XML_NAMESPACE);
+        }
+        
+        eleDoc.setAttribute("id", docID);
+        
+        List<String> docGenre = SolrSearchTools.getMetadataValues(doc, "MD_Genre");
+        for (String genre : docGenre) {
+        	Element eleGenre = new Element("type", nsDc);
+        	eleGenre.setText(genre);
+        	eleDoc.addContent(eleGenre);
+        }
+        */
 
         // Configured fields
         List<io.goobi.viewer.connector.oai.model.metadata.Metadata> metadataList = DataManager
@@ -473,7 +521,7 @@ public class ISEBELFormat extends Format {
                                 );
                                 continue;
                             }
-                            eleStory.addContent(generateDcSource(doc, topstructDoc, anchorDoc, nsDc));
+                            eleDoc.addContent(generateDcSource(doc, topstructDoc, anchorDoc, nsDc));
                             break;
                         case "fulltext":
                             if (topstructDoc == null) {
@@ -487,7 +535,7 @@ public class ISEBELFormat extends Format {
                             	(String) topstructDoc.getFieldValue(SolrConstants.PI_TOPSTRUCT),
                             	nsDc
                             )) {
-                                eleStory.addContent(eleOaiFullText);
+                                eleDoc.addContent(eleOaiFullText);
                             }
                             break;
                         default:
@@ -524,7 +572,7 @@ public class ISEBELFormat extends Format {
                         }
 
                         if (StringUtils.isNotEmpty(val)) {
-                            finishedValues.add(val);
+                            finishedValues.add(url);
                         }
                     } catch (IOException e) {
                         logger.error(
@@ -612,12 +660,12 @@ public class ISEBELFormat extends Format {
                 for (String val : finishedValues) {
                     Element eleField = new Element(md.getLabel(), nsDc);
                     eleField.setText(val);
-                    eleStory.addContent(eleField);
+                    eleDoc.addContent(eleField);
                 }
             }
         }
 
-        metadata.addContent(eleStory);
+        metadata.addContent(eleDoc);
         eleRecord.addContent(metadata);
 
         return eleRecord;
