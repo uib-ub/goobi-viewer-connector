@@ -58,7 +58,9 @@ public class OaiServlet extends HttpServlet {
     /** {@inheritDoc} */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("text/xml;charset=UTF-8");
+    	RequestHandler handler = new RequestHandler(request);
+    	
+    	response.setContentType("text/xml;charset=UTF-8");
 
         String queryString = (request.getQueryString() != null ? "?" + request.getQueryString() : "");
         if (logger.isDebugEnabled()) {
@@ -70,9 +72,11 @@ public class OaiServlet extends HttpServlet {
         // logger.trace("filterQuerySuffix: {}",filterQuerySuffix);
 
         Document doc = new Document();
-        ProcessingInstruction pi = new ProcessingInstruction("xml-stylesheet", "type='text/xsl' href='./oai2.xsl'");
-
-        doc.addContent(pi);
+        if (handler.getMetadataPrefix() != Metadata.ISEBEL) {
+        	ProcessingInstruction pi = new ProcessingInstruction("xml-stylesheet", "type='text/xsl' href='./oai2.xsl'");
+        	doc.addContent(pi);
+        }
+        	
         // generate root element
         Element root = Format.getOaiPmhElement("OAI-PMH");
 
@@ -80,8 +84,6 @@ public class OaiServlet extends HttpServlet {
 
         responseDate.setText(Utils.getCurrentUTCTime(LocalDateTime.now()));
         root.addContent(responseDate);
-
-        RequestHandler handler = new RequestHandler(request);
 
         // handle request
         if (handler.getVerb() == null) {
