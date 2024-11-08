@@ -433,6 +433,8 @@ public class ISEBELFormat extends Format {
         for (int i = 0; i < folkloreRecords.size(); i++) {
         	SolrDocument rec = folkloreRecords.get(i);
         	String idRec = SolrSearchTools.getMetadataValues(rec, "IDDOC").get(0);
+        	String logId = SolrSearchTools.getMetadataValues(rec, "LOGID").get(0);
+        	String idLog = logId.substring(4);
         	
         	Element eleRec = new Element("story", nsIsebel);
             eleRec.addNamespaceDeclaration(nsDc);
@@ -453,19 +455,21 @@ public class ISEBELFormat extends Format {
             	eleRec.setAttribute("lang", recLangVal, Namespace.XML_NAMESPACE);
             }
             
-            String attrRecID = docID + "/" + (i + 1);
+            String attrRecID = docID + "/" + idLog;
             eleRec.setAttribute("id", attrRecID);
         	
-        	String recID = "no.samla." + docID + "." + (i + 1);
+        	String recID = "no.samla." + docID + "." + idLog;
         	Element eleId = new Element("identifier", nsDc);
         	eleId.addContent(recID);
         	eleRec.addContent(eleId);
         	
-        	String purl = DataManager
+        	String baseURL = DataManager
         		.getInstance()
         		.getConfiguration()
-        		.getOaiIdentifier()
-        		.get("repositoryIdentifier") + docID;
+        		.getIdentifyTags()
+        		.get("baseURL");
+        	String purl = baseURL.substring(0, baseURL.length() - 3) 
+        		+ "!metadata/" + docID + "/0/" + logId;
         	Element elePurl = new Element("purl", nsIsebel);
         	elePurl.addContent(purl);
         	eleRec.addContent(elePurl);
@@ -639,43 +643,6 @@ public class ISEBELFormat extends Format {
 	        	}
 	        	eleRec.addContent(eleKeywords);
 	        }
-
-	        /*
-        	List<String> places = SolrSearchTools.getMetadataValues(rec, "MD_Place");
-        	List<String> keywords = SolrSearchTools.getMetadataValues(rec, "MD_Subject");
-        	List<String> taleTypes = SolrSearchTools.getMetadataValues(rec, "MD_CatalogClassification");
-        	
-        	List<String> refCodes = SolrSearchTools.getMetadataValues(rec, "NORM_RefCode");
-        	List<String> normNames = SolrSearchTools.getMetadataValues(rec, "NORM_Name");
-        	
-        	int refCodeOffsetTaleTypes = refCodes.size() - taleTypes.size();
-        	int refCodeOffsetKeywords = refCodeOffsetTaleTypes - keywords.size();
-        	int nameOffsetPlaces = 0;
-        	int nameOffsetKeywords = nameOffsetPlaces + places.size();
-        	
-        	Element eleKeywords = new Element("keywords", nsIsebel);
-        	for (int j = 0; j < keywords.size(); j++) {
-        		Element eleKeyword = new Element("keyword", nsIsebel);
-        		eleKeyword.setAttribute("id", refCodes.get(j + refCodeOffsetKeywords));
-        		eleKeyword.setText(normNames.get(j + nameOffsetKeywords));
-        		eleKeywords.addContent(eleKeyword);
-        	}
-
-        	List<String> placesDoc = SolrSearchTools.getMetadataValues(doc, "MD_Place");
-        	List<String> keywordsDoc = SolrSearchTools.getMetadataValues(doc, "MD_Subject");
-        	List<String> taleTypesDoc = SolrSearchTools.getMetadataValues(doc, "MD_CatalogClassification");
-        	
-        	List<String> refCodesDoc = SolrSearchTools.getMetadataValues(doc, "NORM_RefCode");
-        	
-        	refCodeOffsetTaleTypes = refCodesDoc.size() - taleTypesDoc.size();
-        	refCodeOffsetKeywords = refCodeOffsetTaleTypes - keywordsDoc.size();
-        	nameOffsetPlaces = 0;
-        	nameOffsetKeywords = nameOffsetPlaces + placesDoc.size();
-	        
-	        if (keywords.size() > 0) {
-	        	eleRec.addContent(eleKeywords);
-	        }
-	        */
             
         	metadata.addContent(eleRec);
         }
